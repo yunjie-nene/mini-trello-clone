@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card as CardType, List as ListType } from '../types';
 import CardModal from './CardModal';
 import CardStatusChanger from './CardStatusChanger';
-import { CheckCircle, MoreVertical } from 'lucide-react';
+import { CheckCircle, MoreVertical, GripVertical } from 'lucide-react';
 
 interface DraggableCardProps extends CardType {
   onCardUpdated: () => void;
@@ -29,6 +29,16 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   const cardRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showMobileOptions, setShowMobileOptions] = useState(false);
+  const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear any timeouts when component unmounts
+  useEffect(() => {
+    return () => {
+      if (longPressTimeoutRef.current) {
+        clearTimeout(longPressTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleCardClick = () => {
     if (!isDragging) {
@@ -76,6 +86,30 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     e.stopPropagation(); // Prevent card click
     setShowMobileOptions(!showMobileOptions);
   };
+  
+  // Handle long press for touch devices
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Start timer for long press
+    longPressTimeoutRef.current = setTimeout(() => {
+      setShowMobileOptions(true);
+    }, 800); // Long press after 800ms
+  };
+  
+  const handleTouchEnd = () => {
+    // Clear the long press timer
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+  };
+  
+  const handleTouchMove = () => {
+    // If user moves finger while pressing, cancel long press
+    if (longPressTimeoutRef.current) {
+      clearTimeout(longPressTimeoutRef.current);
+      longPressTimeoutRef.current = null;
+    }
+  };
 
   return (
     <>
@@ -85,6 +119,9 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
         onClick={handleCardClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchMove}
         className={`rounded p-3 border shadow-sm hover:shadow cursor-pointer transition duration-200 ease-in-out ${
           isDone 
             ? 'bg-green-50 border-green-200 hover:bg-green-100' 
@@ -92,12 +129,25 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         }`}
       >
         <div className="flex justify-between items-start">
-          <h4 className={`font-medium flex items-center gap-2 ${isDone ? 'text-green-700' : 'text-gray-700'}`}>
-            {isDone && <CheckCircle className="text-green-500" size={16} />}
-            <span className={isDone ? 'line-through' : ''}>{title}</span>
-          </h4>
+          {/* Card content */}
+          <div className="flex-1">
+            <h4 className={`font-medium flex items-center gap-2 ${isDone ? 'text-green-700' : 'text-gray-700'} break-words`}>
+              {isDone && <CheckCircle className="text-green-500 flex-shrink-0" size={16} />}
+              <span className={isDone ? 'line-through' : ''}>{title}</span>
+            </h4>
+            
+            {description && (
+              <p className="text-sm text-gray-500 mt-1 break-words">{description}</p>
+            )}
+          </div>
           
-          <div className="flex items-center gap-1">
+          {/* Card controls */}
+          <div className="flex items-center gap-1 ml-2 flex-shrink-0">
+            {/* Drag handle - visual indicator */}
+            <div className="touch-none md:cursor-grab text-gray-400 p-1 hidden md:flex">
+              <GripVertical size={14} />
+            </div>
+            
             {/* Status changer (visible on both mobile and desktop) */}
             <CardStatusChanger
               cardId={_id}
@@ -115,10 +165,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
             </button>
           </div>
         </div>
-        
-        {description && (
-          <p className="text-sm text-gray-500 mt-1">{description}</p>
-        )}
         
         {/* Mobile options menu */}
         {showMobileOptions && (

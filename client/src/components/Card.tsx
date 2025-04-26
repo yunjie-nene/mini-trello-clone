@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Card as CardType } from '../types';
 import CardModal from './CardModal';
-import { FaCheckCircle } from 'react-icons/fa';
+import { CheckCircle } from 'lucide-react';
 
 interface DraggableCardProps extends CardType {
   onCardUpdated: () => void;
@@ -81,7 +81,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         }`}
       >
         <h4 className={`font-medium flex items-center gap-2 ${isDone ? 'text-green-700' : 'text-gray-700'}`}>
-          {isDone && <FaCheckCircle className="text-green-500" />}
+          {isDone && <CheckCircle className="text-green-500" />}
           <span className={isDone ? 'line-through' : ''}>{title}</span>
         </h4>
         {description && (

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Board as BoardType, List as ListType, Card as CardType } from '../types';
 import { getBoards, getLists, getCards, moveCard } from '../data/mockData';
 import DroppableList from './DroppableList';
@@ -7,6 +8,9 @@ import ColumnTabs from './ColumnTabs';
 import { Layers, List } from 'lucide-react';
 
 const Board: React.FC = () => {
+  const { boardId } = useParams<{ boardId: string }>();
+  const navigate = useNavigate();
+  
   const [board, setBoard] = useState<BoardType | null>(null);
   const [lists, setLists] = useState<ListType[]>([]);
   const [cards, setCards] = useState<CardType[]>([]);
@@ -17,28 +21,35 @@ const Board: React.FC = () => {
   const listContainerRef = useRef<HTMLDivElement>(null);
 
   const loadData = () => {
-    const boards = getBoards();
+    if (!boardId) {
+      navigate('/');
+      return;
+    }
     
-    if (boards.length > 0) {
-      const activeBoard = boards[0]; // For now, just use the first board
-      setBoard(activeBoard);
+    const boards = getBoards();
+    const currentBoard = boards.find(b => b._id === boardId);
+    
+    if (currentBoard) {
+      setBoard(currentBoard);
       
       const boardLists = getLists().filter(list => 
-        activeBoard.lists.includes(list._id)
+        currentBoard.lists.includes(list._id)
       );
       setLists(boardLists);
       
       const allCards = getCards();
       setCards(allCards);
+    } else {
+      // Board not found, redirect to board list
+      navigate('/');
     }
     
     setLoading(false);
   };
 
   useEffect(() => {
-    // Load data from localStorage
     loadData();
-  }, []);
+  }, [boardId]);
   
   // Set initial active list when lists are loaded
   useEffect(() => {
@@ -90,18 +101,18 @@ const Board: React.FC = () => {
   };
 
   if (loading) {
-    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+    return <div className="flex justify-center items-center h-full">Loading...</div>;
   }
 
   if (!board) {
-    return <div className="flex justify-center items-center h-screen">No boards found</div>;
+    return <div className="flex justify-center items-center h-full">Board not found</div>;
   }
 
   return (
     <div className="flex flex-col h-full bg-gray-100">
       <div className="py-2 sm:py-4 bg-white shadow-sm">
         <div className="px-4 sm:px-8 flex justify-between items-center">
-          <h2 className="text-lg sm:text-xl w-7xl mx-auto font-bold text-gray-800">{board.title}</h2>
+          <h2 className="text-lg md:w-7xl max-auto sm:text-xl font-bold text-gray-800">{board.title}</h2>
           
           {/* Mobile view toggle */}
           <button 
@@ -146,10 +157,10 @@ const Board: React.FC = () => {
       )}
       
       {/* Scroll View (default for desktop, optional for mobile) */}
-      <div className={`flex-1 px-2 sm:px-6 py-4 overflow-auto mx-auto ${viewMode === 'tabs' ? 'hidden md:block' : ''}`}>
+      <div className={`flex-1 px-2 sm:px-6 py-4 overflow-auto ${viewMode === 'tabs' ? 'hidden md:block' : ''}`}>
         <div 
           ref={listContainerRef}
-          className="flex flex-nowrap overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x"
+          className="flex flex-nowrap justify-center overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x"
         >
           {lists.map(list => {
             const listCards = cards.filter(card => card.list === list._id);

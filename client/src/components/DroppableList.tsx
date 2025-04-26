@@ -40,18 +40,32 @@ const DroppableList: React.FC<DroppableListProps> = ({
     const cardId = e.dataTransfer.getData('cardId');
     const sourceListId = e.dataTransfer.getData('sourceListId');
     
-    // Only process drop if card is from another list or if we're reordering
-    if (sourceListId !== list._id || dragOverIndex !== null) {
-      const position = dragOverIndex !== null ? dragOverIndex : cards.length;
-      onCardMoved(cardId, sourceListId, list._id, position);
-    }
+    // When dropping in the list container (not on a specific card)
+    // add the card at the end of the list
+    const position = dragOverIndex !== null ? dragOverIndex : cards.length;
+    onCardMoved(cardId, sourceListId, list._id, position);
     
     setIsDragOver(false);
     setDragOverIndex(null);
   };
   
-  const handleCardDragOver = (index: number) => {
-    setDragOverIndex(index);
+  const handleCardDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Get the target element
+    const targetElement = e.currentTarget;
+    const targetRect = targetElement.getBoundingClientRect();
+    const targetMiddleY = targetRect.top + targetRect.height / 2;
+    
+    // Determine whether we're dragging above or below the middle of the card
+    if (e.clientY < targetMiddleY) {
+      // Above the middle - place indicator at top
+      setDragOverIndex(index);
+    } else {
+      // Below the middle - place indicator at bottom
+      setDragOverIndex(index + 1);
+    }
   };
   
   const handleDragStart = (cardId: string, listId: string) => {
@@ -75,7 +89,10 @@ const DroppableList: React.FC<DroppableListProps> = ({
       // Detect if we're moving up or down significantly
       const diff = currentY - touchStartY;
       if (Math.abs(diff) > 30) {
-        handleCardDragOver(diff > 0 ? index + 1 : index);
+        handleCardDragOver(
+          e as unknown as React.DragEvent<HTMLDivElement>,
+          diff > 0 ? index + 1 : index
+        );
       }
     }
   };
@@ -94,6 +111,10 @@ const DroppableList: React.FC<DroppableListProps> = ({
     ? cards.filter(card => card._id !== activeDragItem.cardId)
     : cards;
 
+    visibleCards.sort((a, b) => (a.position || 0) - (b.position || 0));
+
+    console.log('Visible cards:', visibleCards);
+
   return (
     <div 
       className={`bg-white rounded-lg shadow-sm w-full md:w-[280px] flex flex-col items-stretch ${
@@ -111,17 +132,17 @@ const DroppableList: React.FC<DroppableListProps> = ({
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
+        {/* Show drop indicator at the beginning if needed */}
+        {dragOverIndex === 0 && (
+          <div className="h-1 bg-blue-500 rounded my-2" />
+        )}
+        
         {visibleCards.map((card, index) => (
           <React.Fragment key={card._id}>
-            {dragOverIndex === index && (
-              <div className="h-2 bg-blue-300 rounded my-1" />
-            )}
             <div 
               className="mb-2"
-              onDragOver={(e) => {
-                e.preventDefault();
-                handleCardDragOver(index);
-              }}
+              onDragOver={(e) => handleCardDragOver(e, index)}
+              onDrop={handleDrop}
               onTouchStart={(e) => handleTouchStart(e, index, card._id)}
               onTouchMove={(e) => handleTouchMove(e, index)}
               onTouchEnd={(e) => handleTouchEnd(e, card._id)}
@@ -136,10 +157,18 @@ const DroppableList: React.FC<DroppableListProps> = ({
                 onMoveCard={onCardMoved}
               />
             </div>
+            {/* Display drop indicator after this card if dragOverIndex matches */}
+            {dragOverIndex === index + 1 && (
+              <div className="h-1 bg-blue-500 rounded my-2" />
+            )}
           </React.Fragment>
         ))}
-        {dragOverIndex === visibleCards.length && (
-          <div className="h-2 bg-blue-300 rounded my-1" />
+        
+        {/* If there are no cards, show a drop area */}
+        {visibleCards.length === 0 && (
+          <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-gray-400 text-sm h-16 flex items-center justify-center">
+            Drop a card here
+          </div>
         )}
       </div>
       

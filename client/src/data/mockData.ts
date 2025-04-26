@@ -1,314 +1,225 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Board, List, Card } from '../types';
 
-const generateId = (): string => {
-  return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-};
+// LocalStorage keys
+const BOARDS_KEY = 'trello_boards';
+const LISTS_KEY = 'trello_lists';
+const CARDS_KEY = 'trello_cards';
 
-const STORAGE_KEYS = {
-  BOARDS: 'trello_boards',
-  LISTS: 'trello_lists',
-  CARDS: 'trello_cards',
-};
+// Initialize default data if none exists
+const initializeDefaultData = () => {
+  if (!localStorage.getItem(BOARDS_KEY)) {
+    // Create default board
+    const boardId = uuidv4();
+    const todoListId = uuidv4();
+    const inProgressListId = uuidv4();
+    const doneListId = uuidv4();
 
-const initializeMockData = () => {
-  const existingBoards = localStorage.getItem(STORAGE_KEYS.BOARDS);
-  if (existingBoards) return;
+    // Default board
+    const defaultBoard: Board = {
+      _id: boardId,
+      title: 'My First Board',
+      lists: [todoListId, inProgressListId, doneListId],
+    };
 
-  const boardId = generateId();
-  const board: Board = {
-    _id: boardId,
-    title: 'My Project Board',
-    lists: [],
-  };
+    // Default lists
+    const defaultLists: List[] = [
+      {
+        _id: todoListId,
+        title: 'To Do',
+        board: boardId,
+      },
+      {
+        _id: inProgressListId,
+        title: 'In Progress',
+        board: boardId,
+      },
+      {
+        _id: doneListId,
+        title: 'Done',
+        board: boardId,
+      },
+    ];
 
-  const todoListId = generateId();
-  const inProgressListId = generateId();
-  const doneListId = generateId();
+    // Default cards
+    const defaultCards: Card[] = [
+      {
+        _id: uuidv4(),
+        title: 'Welcome to Nora Trello!',
+        description: 'This is your first card. You can edit or delete it.',
+        list: todoListId,
+        position: 0,
+      },
+      {
+        _id: uuidv4(),
+        title: 'Try dragging this card',
+        description: 'You can drag cards between lists to change their status.',
+        list: todoListId,
+        position: 1,
+      },
+      {
+        _id: uuidv4(),
+        title: 'Working on a feature',
+        description: 'This card is in progress.',
+        list: inProgressListId,
+        position: 0,
+      },
+      {
+        _id: uuidv4(),
+        title: 'Completed task',
+        description: 'This task has been completed.',
+        list: doneListId,
+        position: 0,
+      },
+    ];
 
-  const todoList: List = {
-    _id: todoListId,
-    title: 'To Do',
-    board: boardId,
-    cards: [],
-  };
-
-  const inProgressList: List = {
-    _id: inProgressListId,
-    title: 'In Progress',
-    board: boardId,
-    cards: [],
-  };
-
-  const doneList: List = {
-    _id: doneListId,
-    title: 'Done',
-    board: boardId,
-    cards: [],
-  };
-
-  board.lists = [todoListId, inProgressListId, doneListId];
-
-  const cards: Card[] = [
-    {
-      _id: generateId(),
-      title: 'Research project requirements',
-      description: 'Gather all necessary information about project scope',
-      list: todoListId,
-    },
-    {
-      _id: generateId(),
-      title: 'Set up project structure',
-      description: 'Initialize repository and create basic file structure',
-      list: todoListId,
-    },
-    {
-      _id: generateId(),
-      title: 'Design database schema',
-      description: 'Create ERD and define relationships between entities',
-      list: inProgressListId,
-    },
-    {
-      _id: generateId(),
-      title: 'Implement authentication',
-      description: 'Add user registration and login functionality',
-      list: inProgressListId,
-    },
-    {
-      _id: generateId(),
-      title: 'Write documentation',
-      description: 'Document API endpoints and usage instructions',
-      list: doneListId,
-    },
-  ];
-
-  cards.forEach((card) => {
-    const listId = card.list;
-    if (listId === todoListId) {
-      todoList.cards.push(card._id);
-    } else if (listId === inProgressListId) {
-      inProgressList.cards.push(card._id);
-    } else if (listId === doneListId) {
-      doneList.cards.push(card._id);
-    }
-  });
-
-  localStorage.setItem(STORAGE_KEYS.BOARDS, JSON.stringify([board]));
-  localStorage.setItem(
-    STORAGE_KEYS.LISTS,
-    JSON.stringify([todoList, inProgressList, doneList])
-  );
-  localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
-};
-
-const getBoards = (): Board[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.BOARDS);
-  return data ? JSON.parse(data) : [];
-};
-
-const getLists = (): List[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.LISTS);
-  return data ? JSON.parse(data) : [];
-};
-
-const getCards = (): Card[] => {
-  const data = localStorage.getItem(STORAGE_KEYS.CARDS);
-  return data ? JSON.parse(data) : [];
-};
-
-const getListsForBoard = (boardId: string): List[] => {
-  const lists = getLists();
-  return lists.filter(list => list.board === boardId);
-};
-
-const getCardsForList = (listId: string): Card[] => {
-  const cards = getCards();
-  return cards.filter(card => card.list === listId);
-};
-
-const createBoard = (title: string): Board => {
-  const boards = getBoards();
-  const newBoard: Board = {
-    _id: generateId(),
-    title,
-    lists: [],
-  };
-  
-  boards.push(newBoard);
-  localStorage.setItem(STORAGE_KEYS.BOARDS, JSON.stringify(boards));
-  
-  return newBoard;
-};
-
-const createList = (title: string, boardId: string): List => {
-  const lists = getLists();
-  const newList: List = {
-    _id: generateId(),
-    title,
-    board: boardId,
-    cards: [],
-  };
-  
-  lists.push(newList);
-  localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(lists));
-  
-  const boards = getBoards();
-  const boardIndex = boards.findIndex(b => b._id === boardId);
-  
-  if (boardIndex >= 0) {
-    boards[boardIndex].lists.push(newList._id);
-    localStorage.setItem(STORAGE_KEYS.BOARDS, JSON.stringify(boards));
+    // Save to localStorage
+    localStorage.setItem(BOARDS_KEY, JSON.stringify([defaultBoard]));
+    localStorage.setItem(LISTS_KEY, JSON.stringify(defaultLists));
+    localStorage.setItem(CARDS_KEY, JSON.stringify(defaultCards));
   }
-  
-  return newList;
 };
 
-const createCard = (title: string, listId: string, description?: string): Card => {
+// Initialize data
+initializeDefaultData();
+
+// Helper functions
+export const getBoards = (): Board[] => {
+  const boards = localStorage.getItem(BOARDS_KEY);
+  return boards ? JSON.parse(boards) : [];
+};
+
+export const getLists = (): List[] => {
+  const lists = localStorage.getItem(LISTS_KEY);
+  return lists ? JSON.parse(lists) : [];
+};
+
+export const getCards = (): Card[] => {
+  const cards = localStorage.getItem(CARDS_KEY);
+  let cardsArray = cards ? JSON.parse(cards) : [];
+  
+  // Sort cards by position within each list
+  cardsArray.sort((a: Card, b: Card) => {
+    if (a.list === b.list) {
+      return (a.position || 0) - (b.position || 0);
+    }
+    return 0;
+  });
+  
+  return cardsArray;
+};
+
+// Card CRUD operations
+export const createCard = (
+  title: string,
+  listId: string,
+  description?: string
+): Card => {
   const cards = getCards();
+  
+  // Find the highest position in the list to place the new card at the end
+  const listCards = cards.filter(card => card.list === listId);
+  const highestPosition = listCards.length > 0 
+    ? Math.max(...listCards.map(card => card.position || 0)) + 1 
+    : 0;
+  
   const newCard: Card = {
-    _id: generateId(),
+    _id: uuidv4(),
     title,
     description,
     list: listId,
+    position: highestPosition,
   };
   
-  cards.push(newCard);
-  localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
-  
-  const lists = getLists();
-  const listIndex = lists.findIndex(l => l._id === listId);
-  
-  if (listIndex >= 0) {
-    lists[listIndex].cards.push(newCard._id);
-    localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(lists));
-  }
-  
+  localStorage.setItem(CARDS_KEY, JSON.stringify([...cards, newCard]));
   return newCard;
 };
 
-const updateCard = (updatedCard: Card): Card => {
+export const updateCard = (card: Card): void => {
   const cards = getCards();
-  const cardIndex = cards.findIndex(c => c._id === updatedCard._id);
+  const updatedCards = cards.map(c => (c._id === card._id ? card : c));
+  localStorage.setItem(CARDS_KEY, JSON.stringify(updatedCards));
+};
+
+export const deleteCard = (cardId: string): void => {
+  const cards = getCards();
+  const filteredCards = cards.filter(card => card._id !== cardId);
   
-  if (cardIndex >= 0) {
-    const oldListId = cards[cardIndex].list;
-    const newListId = updatedCard.list;
-    
-    cards[cardIndex] = updatedCard;
-    localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
-    
-    if (oldListId !== newListId) {
-      const lists = getLists();
-      
-      const oldListIndex = lists.findIndex(l => l._id === oldListId);
-      if (oldListIndex >= 0) {
-        lists[oldListIndex].cards = lists[oldListIndex].cards.filter(
-          id => id !== updatedCard._id
-        );
-      }
-      
-      const newListIndex = lists.findIndex(l => l._id === newListId);
-      if (newListIndex >= 0) {
-        lists[newListIndex].cards.push(updatedCard._id);
-      }
-      
-      localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(lists));
+  // After deleting, reorder positions to keep them sequential
+  reorderPositions(filteredCards);
+  
+  localStorage.setItem(CARDS_KEY, JSON.stringify(filteredCards));
+};
+
+// Helper function to reorder card positions to keep them sequential
+const reorderPositions = (cards: Card[]): void => {
+  // Group cards by list
+  const listGroups: { [key: string]: Card[] } = {};
+  
+  cards.forEach(card => {
+    if (!listGroups[card.list]) {
+      listGroups[card.list] = [];
     }
-  }
-  
-  return updatedCard;
-};
-
-const deleteCard = (cardId: string): void => {
-  const cards = getCards();
-  const card = cards.find(c => c._id === cardId);
-  
-  if (!card) return;
-  
-  const updatedCards = cards.filter(c => c._id !== cardId);
-  localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(updatedCards));
-  
-  const lists = getLists();
-  const listIndex = lists.findIndex(l => l._id === card.list);
-  
-  if (listIndex >= 0) {
-    lists[listIndex].cards = lists[listIndex].cards.filter(id => id !== cardId);
-    localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(lists));
-  }
-};
-
-const moveCard = (cardId: string, targetListId: string, position: number): Card | null => {
-  const cards = getCards();
-  const cardIndex = cards.findIndex(c => c._id === cardId);
-  
-  if (cardIndex < 0) return null;
-  
-  const card = cards[cardIndex];
-  const sourceListId = card.list;
-  
-  card.list = targetListId;
-  cards[cardIndex] = card;
-  localStorage.setItem(STORAGE_KEYS.CARDS, JSON.stringify(cards));
-  
-  const lists = getLists();
-  
-  const sourceListIndex = lists.findIndex(l => l._id === sourceListId);
-  if (sourceListIndex >= 0) {
-    lists[sourceListIndex].cards = lists[sourceListIndex].cards.filter(
-      id => id !== cardId
-    );
-  }
-  
-  const targetListIndex = lists.findIndex(l => l._id === targetListId);
-  if (targetListIndex >= 0) {
-    const newCards = [...lists[targetListIndex].cards];
-    newCards.splice(position, 0, cardId);
-    lists[targetListIndex].cards = newCards;
-  }
-  
-  localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(lists));
-  
-  return card;
-};
-
-const deleteList = (listId: string): void => {
-  const lists = getLists();
-  const list = lists.find(l => l._id === listId);
-  
-  if (!list) return;
-  
-  const cards = getCards();
-  const listCards = cards.filter(card => card.list === listId);
-  
-  listCards.forEach(card => {
-    deleteCard(card._id);
+    listGroups[card.list].push(card);
   });
   
-  const updatedLists = lists.filter(l => l._id !== listId);
-  localStorage.setItem(STORAGE_KEYS.LISTS, JSON.stringify(updatedLists));
-  
-  const boards = getBoards();
-  const boardIndex = boards.findIndex(b => b._id === list.board);
-  
-  if (boardIndex >= 0) {
-    boards[boardIndex].lists = boards[boardIndex].lists.filter(id => id !== listId);
-    localStorage.setItem(STORAGE_KEYS.BOARDS, JSON.stringify(boards));
-  }
+  // For each list, sort and renumber positions
+  Object.keys(listGroups).forEach(listId => {
+    const listCards = listGroups[listId];
+    listCards.sort((a, b) => (a.position || 0) - (b.position || 0));
+    
+    // Reassign positions
+    listCards.forEach((card, index) => {
+      card.position = index;
+    });
+  });
 };
 
-initializeMockData();
-
-export {
-  generateId,
-  getBoards,
-  getLists,
-  getCards,
-  getListsForBoard,
-  getCardsForList,
-  createBoard,
-  createList,
-  createCard,
-  updateCard,
-  deleteCard,
-  moveCard,
-  deleteList
+export const moveCard = (
+  cardId: string,
+  targetListId: string,
+  position: number
+): void => {
+  const cards = getCards();
+  const cardToMove = cards.find(card => card._id === cardId);
+  
+  if (!cardToMove) return;
+  
+  const sourceListId = cardToMove.list;
+  const isMovingWithinList = sourceListId === targetListId;
+  
+  // Get the current position of the card
+  const currentPosition = cardToMove.position || 0;
+  
+  // Change the list and position of the card
+  cardToMove.list = targetListId;
+  
+  // Adjust positions of other cards
+  cards.forEach(card => {
+    // Skip the card we're moving
+    if (card._id === cardId) return;
+    
+    if (isMovingWithinList && card.list === targetListId) {
+      // Reordering within the same list
+      if (position <= currentPosition && card.position !== undefined && card.position >= position && card.position < currentPosition) {
+        // Moving card up - increment positions of cards in between
+        card.position += 1;
+      } else if (position > currentPosition && card.position !== undefined && card.position > currentPosition && card.position <= position) {
+        // Moving card down - decrement positions of cards in between
+        card.position -= 1;
+      }
+    } else if (card.list === sourceListId && card.position !== undefined && card.position > currentPosition) {
+      // Card is leaving this list - decrement positions of cards after it
+      card.position -= 1;
+    } else if (card.list === targetListId && card.position !== undefined && card.position >= position) {
+      // Card is entering this list - increment positions of cards at or after the target position
+      card.position += 1;
+    }
+  });
+  
+  // Set the new position for the moved card
+  cardToMove.position = position;
+  
+  // Save the updated cards to localStorage
+  localStorage.setItem(CARDS_KEY, JSON.stringify(cards));
 };
