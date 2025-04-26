@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Board as BoardType, List as ListType, Card as CardType } from '../types';
 import { getBoards, getLists, getCards } from '../data/mockData';
-import { AiOutlinePlus } from 'react-icons/ai';
 import Card from './Card';
+import AddCardForm from './AddCardForm';
 
 const Board: React.FC = () => {
   const [board, setBoard] = useState<BoardType | null>(null);
@@ -10,29 +10,34 @@ const Board: React.FC = () => {
   const [cards, setCards] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const loadData = () => {
+    const boards = getBoards();
+    
+    if (boards.length > 0) {
+      const activeBoard = boards[0]; // For now, just use the first board
+      setBoard(activeBoard);
+      
+      const boardLists = getLists().filter(list => 
+        activeBoard.lists.includes(list._id)
+      );
+      setLists(boardLists);
+      
+      const allCards = getCards();
+      setCards(allCards);
+    }
+    
+    setLoading(false);
+  };
+
   useEffect(() => {
     // Load data from localStorage
-    const loadData = () => {
-      const boards = getBoards();
-      
-      if (boards.length > 0) {
-        const activeBoard = boards[0]; // For now, just use the first board
-        setBoard(activeBoard);
-        
-        const boardLists = getLists().filter(list => 
-          activeBoard.lists.includes(list._id)
-        );
-        setLists(boardLists);
-        
-        const allCards = getCards();
-        setCards(allCards);
-      }
-      
-      setLoading(false);
-    };
-    
     loadData();
   }, []);
+
+  const handleCardAdded = () => {
+    // Reload data after a card is added
+    loadData();
+  };
 
   if (loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
@@ -64,18 +69,14 @@ const Board: React.FC = () => {
                   .filter(card => card.list === list._id)
                   .map(card => (
                     <div key={card._id} className="mb-2">
-                      <Card {...card} />
+                      <Card {...card} onCardUpdated={handleCardAdded} />
                     </div>
-
                   ))
                 }
               </div>
               
               <div className="p-2 border-t border-gray-200">
-                <button className="w-full py-2 px-3 text-gray-600 text-sm text-left hover:bg-gray-100 rounded flex items-center">
-                  <AiOutlinePlus className="mr-1" />
-                  Add a card
-                </button>
+                <AddCardForm listId={list._id} onCardAdded={handleCardAdded} />
               </div>
             </div>
           ))}
