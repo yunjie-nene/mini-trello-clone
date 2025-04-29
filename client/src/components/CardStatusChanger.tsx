@@ -1,7 +1,9 @@
 import React from 'react';
 import { List as ListType } from '../types';
+import { useMutation } from '@apollo/client';
+import { MOVE_CARD, GET_CARDS } from '../graphqlOperations';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { MoveVertical } from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 
 interface CardStatusChangerProps {
   cardId: string;
@@ -16,19 +18,20 @@ const CardStatusChanger: React.FC<CardStatusChangerProps> = ({
   lists,
   onMoveCard
 }) => {
-  const handleMoveToList = (targetListId: string) => {
-    // Don't do anything if trying to move to the same list
+
+  const handleMoveToList = async (targetListId: string) => {
     if (targetListId === currentListId) return;
-    
-    // Move the card to the end of the target list
     onMoveCard(cardId, currentListId, targetListId, 999999);
   };
 
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded outline-none">
-          <MoveVertical size={16} />
+        <button 
+          className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded outline-none"
+          aria-label="More options"
+        >
+          <MoreVertical size={16} />
         </button>
       </DropdownMenu.Trigger>
       
@@ -50,7 +53,7 @@ const CardStatusChanger: React.FC<CardStatusChangerProps> = ({
               disabled={list._id === currentListId}
               onClick={() => handleMoveToList(list._id)}
               className={`px-2 py-1.5 text-sm rounded-sm outline-none cursor-pointer ${
-                list._id === currentListId 
+                list._id === currentListId
                   ? 'opacity-50 cursor-not-allowed text-gray-400' 
                   : 'text-gray-700 focus:bg-blue-50 focus:text-blue-600'
               }`}

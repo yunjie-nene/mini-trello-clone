@@ -55,7 +55,7 @@ export const resolvers = {
         }
         await Board.findByIdAndDelete(id);
       }
-      return id;
+      return { _id: id};
     },
     
     createList: async (_: any, { title, boardId }: { title: string, boardId: string }) => {
@@ -89,7 +89,7 @@ export const resolvers = {
         await List.findByIdAndDelete(id);
       }
       
-      return id;
+      return { _id: id };
     },
     
     createCard: async (_: any, { title, listId, description, position }: 
@@ -113,7 +113,8 @@ export const resolvers = {
         $push: { cards: card._id }
       });
       
-      return card;
+      // Return card with populated list field
+      return await Card.findById(card._id);
     },
     updateCard: async (_: any, 
       { id, title, description, listId, position }: 
@@ -146,11 +147,14 @@ export const resolvers = {
       }
       
       // Update card
-      return await Card.findByIdAndUpdate(
+      await Card.findByIdAndUpdate(
         id,
         updateData,
         { new: true }
       );
+      
+      // Return card with populated list field
+      return await Card.findById(id);
     },
     deleteCard: async (_: any, { id }: { id: string }) => {
       // Remove card from list
@@ -169,12 +173,12 @@ export const resolvers = {
       { id: string, listId: string, position: number }) => {
       
       const card = await Card.findById(id);
-      
+
       if (!card) {
         throw new Error('Card not found');
       }
       
-      const sourceListId = card.list.toString();
+      const sourceListId = card.list._id.toString();
       
       // If moving to a different list
       if (sourceListId !== listId) {
@@ -219,6 +223,7 @@ export const resolvers = {
   
   List: {
     board: async (parent: any) => {
+      // Return the full Board object
       return await Board.findById(parent.board);
     },
     cards: async (parent: any) => {
@@ -228,6 +233,7 @@ export const resolvers = {
   
   Card: {
     list: async (parent: any) => {
+      // Return the full List object
       return await List.findById(parent.list);
     }
   }

@@ -1,15 +1,20 @@
 import Header from './components/Header';
 import { Outlet } from 'react-router-dom';
+import { ApolloProvider } from '@apollo/client';
+import client from './apolloClient';
 
-function App() {
+const App = () => {
   return (
-    <div className="flex flex-col h-screen">
-      <Header />
-      <main className="flex-1 overflow-hidden">
+    <ApolloProvider client={client}>
+      {/* Your existing app structure - don't add another Router here */}
+      <div className="h-screen flex flex-col">
+        <Header />
+        <div className="flex-1 overflow-hidden">
         <Outlet />
-      </main>
-    </div>
+        </div>
+      </div>
+    </ApolloProvider>
   );
-}
+};
 
 export default App;

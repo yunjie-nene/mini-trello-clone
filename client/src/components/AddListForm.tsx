@@ -1,75 +1,66 @@
 import React, { useState } from 'react';
-import { Plus, X } from 'lucide-react';
 import { useMutation } from '@apollo/client';
-import { CREATE_CARD, GET_CARDS } from '../graphqlOperations';
+import { CREATE_LIST, GET_LISTS, GET_BOARD } from '../graphqlOperations';
+import { Plus, X } from 'lucide-react';
 
-interface AddCardFormProps {
-  listId: string;
-  onCardAdded: () => void;
+interface AddListFormProps {
+  boardId: string;
+  onListAdded: () => void;
 }
 
-const AddCardForm: React.FC<AddCardFormProps> = ({ listId, onCardAdded }) => {
+const AddListForm: React.FC<AddListFormProps> = ({ boardId, onListAdded }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
 
-  const [createCard, { loading }] = useMutation(CREATE_CARD, {
-    refetchQueries: [{ query: GET_CARDS }],
+  const [createList, { loading }] = useMutation(CREATE_LIST, {
+    refetchQueries: [
+      { query: GET_LISTS, variables: { boardId } },
+      { query: GET_BOARD, variables: { id: boardId } }
+    ],
     onCompleted: () => {
-      onCardAdded();
+      onListAdded();
+      setTitle('');
+      setIsFormOpen(false);
     }
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting form with id:', boardId);
     if (title.trim()) {
       try {
-        await createCard({
+        await createList({
           variables: {
             title: title.trim(),
-            listId,
-            description: description.trim() || null
+            boardId
           }
         });
-        
-        setTitle('');
-        setDescription('');
-        setIsFormOpen(false);
       } catch (error) {
-        console.error('Error creating card:', error);
+        console.error('Error creating list:', error);
       }
     }
   };
 
   if (!isFormOpen) {
     return (
-      <button 
-        className="w-full py-2 px-3 text-gray-600 text-sm text-left hover:bg-gray-100 rounded flex items-center"
-        onClick={() => setIsFormOpen(true)}
-      >
-        <Plus size={16} className="mr-1" />
-        Add a card
-      </button>
+      <div className="bg-white rounded-lg shadow-sm w-64 h-12 flex items-center justify-center cursor-pointer hover:bg-gray-50"
+           onClick={() => setIsFormOpen(true)}>
+        <Plus size={16} className="mr-2 text-blue-500" />
+        <span className="text-blue-500">Add New list</span>
+      </div>
     );
   }
 
   return (
-    <div className="p-2">
+    <div className="bg-white rounded-lg shadow-sm w-64 p-3">
       <form onSubmit={handleSubmit}>
         <input
           type="text"
-          placeholder="Enter card title..."
+          placeholder="Enter list title..."
           className="w-full p-2 border border-gray-300 rounded mb-2 focus:outline-none text-base"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           autoFocus
-          disabled={loading}
-        />
-        <textarea
-          placeholder="Add a description... (optional)"
-          className="w-full p-2 border border-gray-300 rounded mb-2 focus:outline-none min-h-[60px] text-base"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
           disabled={loading}
         />
         <div className="flex justify-between">
@@ -80,7 +71,7 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ listId, onCardAdded }) => {
             }`}
             disabled={loading}
           >
-            {loading ? 'Adding...' : 'Add Card'}
+            {loading ? 'Adding...' : 'Add List'}
           </button>
           <button
             type="button"
@@ -96,4 +87,4 @@ const AddCardForm: React.FC<AddCardFormProps> = ({ listId, onCardAdded }) => {
   );
 };
 
-export default AddCardForm;
+export default AddListForm;

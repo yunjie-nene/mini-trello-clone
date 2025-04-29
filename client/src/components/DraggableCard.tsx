@@ -207,7 +207,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       
       {isModalOpen && (
         <CardModal 
-          card={{ _id, title, description, list }} 
+          card={{ _id, title, description, list, position: 0 }} 
           onClose={handleCloseModal}
           onCardUpdated={onCardUpdated}
         />

@@ -1,69 +1,74 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Board as BoardType, List as ListType, Card as CardType } from '../types';
-import { getBoards, getLists, getCards, moveCard } from '../data/mockData';
+import { useQuery, useMutation } from '@apollo/client';
+import { GET_BOARD, GET_LISTS, GET_CARDS, MOVE_CARD } from '../graphqlOperations';
 import DroppableList from './DroppableList';
 import ColumnSelector from './ColumnSelector';
 import ColumnTabs from './ColumnTabs';
+import AddListForm from './AddListForm';
+import BoardOptions from './BoardOptions';
 import { Layers, List } from 'lucide-react';
+import { Card, List as ListType } from '../types';
 
 const Board: React.FC = () => {
   const { boardId } = useParams<{ boardId: string }>();
   const navigate = useNavigate();
   
-  const [board, setBoard] = useState<BoardType | null>(null);
-  const [lists, setLists] = useState<ListType[]>([]);
-  const [cards, setCards] = useState<CardType[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeDragItem, setActiveDragItem] = useState<{ cardId: string, listId: string } | null>(null);
   const [activeListId, setActiveListId] = useState<string>('');
-  const [viewMode, setViewMode] = useState<'tabs' | 'scroll'>('tabs');
+  const [activeDragItem, setActiveDragItem] = useState<{ cardId: string, listId: string } | null>(null);
+  const [viewMode, setViewMode] = useState<'tabs' | 'scroll'>('scroll');
+  const [addingList, setAddingList] = useState(false);
   const listContainerRef = useRef<HTMLDivElement>(null);
 
-  const loadData = () => {
-    if (!boardId) {
-      navigate('/');
-      return;
-    }
-    
-    const boards = getBoards();
-    const currentBoard = boards.find(b => b._id === boardId);
-    
-    if (currentBoard) {
-      setBoard(currentBoard);
-      
-      const boardLists = getLists().filter(list => 
-        currentBoard.lists.includes(list._id)
-      );
-      setLists(boardLists);
-      
-      const allCards = getCards();
-      setCards(allCards);
-    } else {
-      // Board not found, redirect to board list
-      navigate('/');
-    }
-    
-    setLoading(false);
-  };
+  // GraphQL queries
+  const { data: boardData, loading: boardLoading, error: boardError, refetch: refetchBoard } = useQuery(GET_BOARD, {
+    variables: { id: boardId },
+    skip: !boardId
+  });
+
+  const { data: listsData, loading: listsLoading, refetch: refetchLists } = useQuery(GET_LISTS, {
+    variables: { boardId },
+    skip: !boardId
+  });
+
+  const { data: cardsData, refetch: refetchCards } = useQuery(GET_CARDS);
+
+  // GraphQL mutations
+  const [moveCardMutation] = useMutation(MOVE_CARD);
 
   useEffect(() => {
-    loadData();
-  }, [boardId]);
-  
-  // Set initial active list when lists are loaded
-  useEffect(() => {
-    if (lists.length > 0 && !activeListId) {
-      setActiveListId(lists[0]._id);
+    if (listsData?.lists?.length > 0 && !activeListId) {
+      // Ensure we have a valid list before setting it as active
+      const firstList = listsData.lists[0];
+      if (firstList && firstList._id) {
+        setActiveListId(firstList._id);
+      }
     }
-  }, [lists, activeListId]);
+  }, [listsData, activeListId]);
+
+  useEffect(() => {
+    if (boardError || !boardId) {
+      navigate('/');
+    }
+  }, [boardError, boardId, navigate]);
 
   const handleCardAdded = () => {
-    // Reload data after a card is added or updated
-    loadData();
+    refetchLists();
+    refetchCards();
   };
 
-  const handleCardMoved = (
+  const handleListAdded = () => {
+    refetchLists();
+    refetchCards();
+    setAddingList(false);
+  };
+
+  const handleListUpdated = () => {
+    refetchLists();
+    refetchCards();
+  };
+
+  const handleCardMoved = async (
     cardId: string, 
     sourceListId: string, 
     targetListId: string, 
@@ -71,20 +76,27 @@ const Board: React.FC = () => {
   ) => {
     console.log(`Moving card ${cardId} from ${sourceListId} to ${targetListId} at position ${position}`);
     
-    // Set the active drag item to null to reset the state
     setActiveDragItem(null);
     
-    // Use the moveCard function from mockData
-    moveCard(cardId, targetListId, position);
-    
-    // Reload data to update the UI
-    loadData();
+    try {
+      await moveCardMutation({ 
+        variables: { 
+          id: cardId, 
+          listId: targetListId, 
+          position 
+        },
+        refetchQueries: [
+          { query: GET_CARDS }
+        ]
+      });
+    } catch (error) {
+      console.error('Error moving card:', error);
+    }
   };
   
   const handleSelectList = (listId: string) => {
     setActiveListId(listId);
     
-    // Scroll to the selected list on desktop
     if (listContainerRef.current && viewMode === 'scroll') {
       const listElement = document.getElementById(`list-${listId}`);
       if (listElement) {
@@ -100,21 +112,34 @@ const Board: React.FC = () => {
     setViewMode(prev => prev === 'tabs' ? 'scroll' : 'tabs');
   };
 
-  if (loading) {
+  if (boardLoading || listsLoading) {
     return <div className="flex justify-center items-center h-full">Loading...</div>;
   }
+
+  if (boardError) {
+    return <div className="flex justify-center items-center h-full">Error loading board data</div>;
+  }
+
+  const board = boardData?.board;
+  const lists: ListType[] = listsData?.lists || [];
+  
+  // Make sure cards data is available before proceeding
+  const cards: Card[] = cardsData?.cards || [];
 
   if (!board) {
     return <div className="flex justify-center items-center h-full">Board not found</div>;
   }
 
+
   return (
     <div className="flex flex-col h-full bg-gray-100">
       <div className="py-2 sm:py-4 bg-white shadow-sm">
         <div className="px-4 sm:px-8 flex justify-between items-center">
-          <h2 className="text-lg md:w-7xl max-auto sm:text-xl font-bold text-gray-800">{board.title}</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{board.title}</h2>
+            {boardId && <BoardOptions boardId={boardId} boardTitle={board.title} />}
+          </div>
           
-          {/* Mobile view toggle */}
           <button 
             onClick={toggleViewMode}
             className="text-xs px-2 py-1 bg-gray-100 rounded md:hidden flex items-center gap-1"
@@ -134,8 +159,7 @@ const Board: React.FC = () => {
         </div>
       </div>
       
-      {/* Mobile Tab View */}
-      {viewMode === 'tabs' && (
+      {viewMode === 'tabs' && lists.length > 0 && (
         <ColumnTabs
           lists={lists}
           cards={cards}
@@ -144,11 +168,11 @@ const Board: React.FC = () => {
           onCardAdded={handleCardAdded}
           onCardMoved={handleCardMoved}
           activeDragItem={activeDragItem}
+          onListUpdated={handleListUpdated}
         />
       )}
       
-      {/* Mobile Column Selector for Scroll View */}
-      {viewMode === 'scroll' && (
+      {viewMode === 'scroll' && lists.length > 0 && (
         <ColumnSelector 
           lists={lists} 
           activeListId={activeListId} 
@@ -156,19 +180,25 @@ const Board: React.FC = () => {
         />
       )}
       
-      {/* Scroll View (default for desktop, optional for mobile) */}
       <div className={`flex-1 px-2 sm:px-6 py-4 overflow-auto ${viewMode === 'tabs' ? 'hidden md:block' : ''}`}>
         <div 
           ref={listContainerRef}
-          className="flex flex-nowrap justify-center overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x"
+          className="flex flex-nowrap overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-160px)]"
         >
-          {lists.map(list => {
-            const listCards = cards.filter(card => card.list === list._id);
+          {lists.map((list: ListType) => {
+            // Filter cards for this list
+            const listCards = cards.filter((card: Card) => {
+              const cardListId = typeof card.list === 'object' 
+                ? card.list._id 
+                : card.list;
+              return cardListId === list._id;
+            });
+            
             return (
               <div 
                 id={`list-${list._id}`} 
                 key={list._id} 
-                className={`snap-start`}
+                className="snap-start flex-shrink-0"
               >
                 <DroppableList
                   list={list}
@@ -177,10 +207,18 @@ const Board: React.FC = () => {
                   onCardMoved={handleCardMoved}
                   activeDragItem={activeDragItem}
                   allLists={lists}
+                  boardId={boardId || ''}
+                  onListUpdated={handleListUpdated}
                 />
               </div>
             );
           })}
+          
+          {boardId && lists.length < 4 && (
+            <div className="snap-start flex-shrink-0">
+              <AddListForm boardId={boardId} onListAdded={handleListAdded} />
+            </div>
+          )}
         </div>
       </div>
     </div>

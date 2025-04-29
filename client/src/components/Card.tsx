@@ -10,7 +10,7 @@ interface DraggableCardProps extends CardType {
   isDone?: boolean;
 }
 
-const DraggableCard: React.FC<DraggableCardProps> = ({ 
+const Card: React.FC<DraggableCardProps> = ({ 
   _id, 
   title, 
   description, 
@@ -91,7 +91,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
       
       {isModalOpen && (
         <CardModal 
-          card={{ _id, title, description, list }} 
+          card={{ _id, title, description, list, position: 0 }} 
           onClose={handleCloseModal}
           onCardUpdated={onCardUpdated}
         />
@@ -100,4 +100,4 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   );
 };
 
-export default DraggableCard;
+export default Card;

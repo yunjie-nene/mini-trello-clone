@@ -1,7 +1,9 @@
 import React from 'react';
 import { List as ListType, Card as CardType } from '../types';
-import * as Tabs from '@radix-ui/react-tabs';
 import DroppableList from './DroppableList';
+import * as Tabs from '@radix-ui/react-tabs';
+import { useParams } from 'react-router-dom';
+import ListOptions from './ListOptions';
 
 interface ColumnTabsProps {
   lists: ListType[];
@@ -11,6 +13,7 @@ interface ColumnTabsProps {
   onCardAdded: () => void;
   onCardMoved: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
   activeDragItem: { cardId: string, listId: string } | null;
+  onListUpdated: () => void;
 }
 
 const ColumnTabs: React.FC<ColumnTabsProps> = ({
@@ -20,24 +23,27 @@ const ColumnTabs: React.FC<ColumnTabsProps> = ({
   onSelectList,
   onCardAdded,
   onCardMoved,
-  activeDragItem
+  activeDragItem,
+  onListUpdated
 }) => {
+  const { boardId } = useParams<{ boardId: string }>();
+  
+  if (lists.length === 0) {
+    return null;
+  }
+
   return (
-    <Tabs.Root 
-      defaultValue={activeListId || (lists.length > 0 ? lists[0]._id : '')}
+    <Tabs.Root
       value={activeListId}
       onValueChange={onSelectList}
       className="w-full md:hidden"
     >
-      <Tabs.List 
-        className="flex overflow-x-auto bg-gray-100 border-b border-gray-200 w-full"
-        aria-label="Board columns"
-      >
+      <Tabs.List className="flex overflow-x-auto border-b border-gray-200 bg-white">
         {lists.map(list => (
-          <Tabs.Trigger 
-            key={list._id} 
+          <Tabs.Trigger
+            key={list._id}
             value={list._id}
-            className="px-4 py-2 text-sm flex-1 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:bg-white outline-none"
+            className="px-4 py-2 border-b-2 border-transparent data-[state=active]:border-blue-500 data-[state=active]:text-blue-600 flex-shrink-0 text-sm sm:text-base font-medium whitespace-nowrap focus:outline-none"
           >
             {list.title}
           </Tabs.Trigger>
@@ -45,15 +51,28 @@ const ColumnTabs: React.FC<ColumnTabsProps> = ({
       </Tabs.List>
       
       {lists.map(list => {
-        const listCards = cards.filter(card => card.list === list._id);
-        
+        // Filter cards for this list
+        const listCards = cards.filter(card => {
+          const cardListId = typeof card.list === 'object' 
+            ? card.list._id 
+            : card.list;
+          return cardListId === list._id;
+        });
+
         return (
-          <Tabs.Content 
-            key={list._id} 
-            value={list._id} 
-            className="pt-3 outline-none"
-            tabIndex={0}
-          >
+          <Tabs.Content key={list._id} value={list._id} className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium text-lg text-gray-700">{list.title}</h3>
+              {boardId && (
+                <ListOptions 
+                  listId={list._id} 
+                  boardId={boardId} 
+                  listTitle={list.title} 
+                  onListUpdated={onListUpdated}
+                />
+              )}
+            </div>
+            
             <DroppableList
               list={list}
               cards={listCards}
@@ -61,6 +80,8 @@ const ColumnTabs: React.FC<ColumnTabsProps> = ({
               onCardMoved={onCardMoved}
               activeDragItem={activeDragItem}
               allLists={lists}
+              boardId={boardId || ''}
+              onListUpdated={onListUpdated}
             />
           </Tabs.Content>
         );

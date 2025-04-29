@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card as CardType } from '../types';
-import { updateCard, deleteCard } from '../data/mockData';
+import { useMutation } from '@apollo/client';
+import { UPDATE_CARD, DELETE_CARD, GET_CARDS } from '../graphqlOperations';
 import { X, Trash2 } from 'lucide-react';
 import * as Dialog from '@radix-ui/react-dialog';
 
@@ -14,7 +15,20 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
   const [title, setTitle] = useState(card.title);
   const [description, setDescription] = useState(card.description || '');
 
-  // Lock body scroll when modal is open
+  const [updateCard, { loading: updateLoading }] = useMutation(UPDATE_CARD, {
+    refetchQueries: [{ query: GET_CARDS }],
+    onCompleted: () => {
+      onCardUpdated();
+    }
+  });
+
+  const [deleteCard, { loading: deleteLoading }] = useMutation(DELETE_CARD, {
+    refetchQueries: [{ query: GET_CARDS }],
+    onCompleted: () => {
+      onCardUpdated();
+    }
+  });
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     return () => {
@@ -22,25 +36,39 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
     };
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (title.trim()) {
-      updateCard({
-        ...card,
-        title,
-        description: description.trim() ? description : undefined
-      });
-      onCardUpdated();
-      onClose();
+      try {
+        await updateCard({
+          variables: {
+            id: card._id,
+            title: title.trim(),
+            description: description.trim() || null
+          }
+        });
+        onClose();
+      } catch (error) {
+        console.error('Error updating card:', error);
+      }
     }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this card?')) {
-      deleteCard(card._id);
-      onCardUpdated();
-      onClose();
+      try {
+        await deleteCard({
+          variables: {
+            id: card._id
+          }
+        });
+        onClose();
+      } catch (error) {
+        console.error('Error deleting card:', error);
+      }
     }
   };
+
+  const isLoading = updateLoading || deleteLoading;
 
   return (
     <Dialog.Root open={true} onOpenChange={() => onClose()}>
@@ -50,7 +78,7 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           onEscapeKeyDown={onClose}
           onInteractOutside={(e) => {
-            e.preventDefault(); // Prevent closing on outside click
+            e.preventDefault();
           }}
         >
           <div 
@@ -62,6 +90,7 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
               <Dialog.Close asChild>
                 <button 
                   className="text-gray-500 hover:text-gray-700 p-2 rounded-full hover:bg-gray-100" 
+                  disabled={isLoading}
                 >
                   <X size={18} />
                 </button>
@@ -78,6 +107,7 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
                   className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
               
@@ -89,31 +119,39 @@ const CardModal: React.FC<CardModalProps> = ({ card, onClose, onCardUpdated }) =
                   className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[100px]"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
+                  disabled={isLoading}
                 />
               </div>
             </div>
             
             <div className="flex justify-between p-4 border-t">
               <button
-                className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 flex items-center"
+                className={`bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 flex items-center ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
                 onClick={handleDelete}
+                disabled={isLoading}
               >
                 <Trash2 size={16} className="mr-1" />
-                Delete
+                {deleteLoading ? 'Deleting...' : 'Delete'}
               </button>
               
               <div className="space-x-2">
                 <button
                   className="bg-gray-200 text-gray-800 px-3 py-2 rounded hover:bg-gray-300"
                   onClick={onClose}
+                  disabled={isLoading}
                 >
                   Cancel
                 </button>
                 <button
-                  className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600"
+                  className={`bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 ${
+                    isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
                   onClick={handleSave}
+                  disabled={isLoading}
                 >
-                  Save
+                  {updateLoading ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </div>

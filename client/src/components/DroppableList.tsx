@@ -2,23 +2,28 @@ import React, { useState } from 'react';
 import { List as ListType, Card as CardType } from '../types';
 import DraggableCard from './DraggableCard';
 import AddCardForm from './AddCardForm';
+import ListOptions from './ListOptions';
 
 interface DroppableListProps {
   list: ListType;
   cards: CardType[];
+  boardId: string;
   onCardAdded: () => void;
   onCardMoved: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
   activeDragItem: { cardId: string, listId: string } | null;
   allLists: ListType[];
+  onListUpdated: () => void;
 }
 
 const DroppableList: React.FC<DroppableListProps> = ({ 
   list, 
   cards, 
+  boardId,
   onCardAdded, 
   onCardMoved,
   activeDragItem,
-  allLists
+  allLists,
+  onListUpdated
 }) => {
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
@@ -43,6 +48,7 @@ const DroppableList: React.FC<DroppableListProps> = ({
     // When dropping in the list container (not on a specific card)
     // add the card at the end of the list
     const position = dragOverIndex !== null ? dragOverIndex : cards.length;
+    console.log('position', position);
     onCardMoved(cardId, sourceListId, list._id, position);
     
     setIsDragOver(false);
@@ -79,7 +85,7 @@ const DroppableList: React.FC<DroppableListProps> = ({
   };
 
   // Touch event handlers for mobile
-  const handleTouchStart = (e: React.TouchEvent, index: number, cardId: string) => {
+  const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStartY(e.touches[0].clientY);
   };
 
@@ -111,9 +117,17 @@ const DroppableList: React.FC<DroppableListProps> = ({
     ? cards.filter(card => card._id !== activeDragItem.cardId)
     : cards;
 
-    visibleCards.sort((a, b) => (a.position || 0) - (b.position || 0));
+  // Sort cards by position
+  visibleCards.sort((a, b) => (a.position || 0) - (b.position || 0));
 
-    console.log('Visible cards:', visibleCards);
+  // Filter cards to get only those belonging to this list
+  const filteredCards = visibleCards.filter(card => {
+    // Check if card.list is an object with _id or a string
+    const cardListId = typeof card.list === 'object' && card.list !== null
+      ? card.list._id 
+      : card.list;
+    return cardListId === list._id;
+  });
 
   return (
     <div 
@@ -121,9 +135,17 @@ const DroppableList: React.FC<DroppableListProps> = ({
         isDragOver ? 'bg-blue-50' : ''
       }`}
     >
-      <div className="p-3 border-b border-gray-200">
-        <h3 className="font-medium text-gray-700">{list.title}</h3>
-        <div className="text-xs text-gray-500">{cards.length} {cards.length === 1 ? 'card' : 'cards'}</div>
+      <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+        <div>
+          <h3 className="font-medium text-gray-700">{list.title}</h3>
+          <div className="text-xs text-gray-500">{filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'}</div>
+        </div>
+        <ListOptions 
+          listId={list._id} 
+          boardId={boardId} 
+          listTitle={list.title} 
+          onListUpdated={onListUpdated} 
+        />
       </div>
       
       <div 
@@ -137,13 +159,13 @@ const DroppableList: React.FC<DroppableListProps> = ({
           <div className="h-1 bg-blue-500 rounded my-2" />
         )}
         
-        {visibleCards.map((card, index) => (
+        {filteredCards.map((card, index) => (
           <React.Fragment key={card._id}>
             <div 
               className="mb-2"
               onDragOver={(e) => handleCardDragOver(e, index)}
               onDrop={handleDrop}
-              onTouchStart={(e) => handleTouchStart(e, index, card._id)}
+              onTouchStart={(e) => handleTouchStart(e)}
               onTouchMove={(e) => handleTouchMove(e, index)}
               onTouchEnd={(e) => handleTouchEnd(e, card._id)}
             >
@@ -165,7 +187,7 @@ const DroppableList: React.FC<DroppableListProps> = ({
         ))}
         
         {/* If there are no cards, show a drop area */}
-        {visibleCards.length === 0 && (
+        {filteredCards.length === 0 && (
           <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-gray-400 text-sm h-16 flex items-center justify-center">
             Drop a card here
           </div>
