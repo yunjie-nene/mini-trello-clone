@@ -1,7 +1,5 @@
 import React from 'react';
 import { List as ListType } from '../types';
-import { useMutation } from '@apollo/client';
-import { MOVE_CARD, GET_CARDS } from '../graphqlOperations';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { MoreVertical } from 'lucide-react';
 
@@ -9,7 +7,7 @@ interface CardStatusChangerProps {
   cardId: string;
   currentListId: string;
   lists: ListType[];
-  onMoveCard: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
+  onMoveCard: (cardId: string, targetListId: string, position: number) => void;
 }
 
 const CardStatusChanger: React.FC<CardStatusChangerProps> = ({
@@ -21,7 +19,7 @@ const CardStatusChanger: React.FC<CardStatusChangerProps> = ({
 
   const handleMoveToList = async (targetListId: string) => {
     if (targetListId === currentListId) return;
-    onMoveCard(cardId, currentListId, targetListId, 999999);
+    onMoveCard(cardId,targetListId, 999999);
   };
 
   return (

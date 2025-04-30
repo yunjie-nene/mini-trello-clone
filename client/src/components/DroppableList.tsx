@@ -9,7 +9,7 @@ interface DroppableListProps {
   cards: CardType[];
   boardId: string;
   onCardAdded: () => void;
-  onCardMoved: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
+  onCardMoved: (cardId: string,targetListId: string, position: number) => void;
   activeDragItem: { cardId: string, listId: string } | null;
   allLists: ListType[];
   onListUpdated: () => void;
@@ -43,10 +43,9 @@ const DroppableList: React.FC<DroppableListProps> = ({
     e.preventDefault();
     
     const cardId = e.dataTransfer.getData('cardId');
-    const sourceListId = e.dataTransfer.getData('sourceListId');
     
     const position = dragOverIndex !== null ? dragOverIndex : cards.length;
-    onCardMoved(cardId, sourceListId, list._id, position);
+    onCardMoved(cardId, list._id, position);
     
     setIsDragOver(false);
     setDragOverIndex(null);
@@ -67,9 +66,6 @@ const DroppableList: React.FC<DroppableListProps> = ({
     }
   };
   
-  const handleDragStart = (cardId: string, listId: string) => {
-    // Handled by parent component
-  };
   
   const handleDragEnd = () => {
     setIsDragOver(false);
@@ -95,7 +91,7 @@ const DroppableList: React.FC<DroppableListProps> = ({
 
   const handleTouchEnd = (_: React.TouchEvent, cardId: string) => {
     if (dragOverIndex !== null && touchStartY !== null) {
-      onCardMoved(cardId, list._id, list._id, dragOverIndex);
+      onCardMoved(cardId, list._id, dragOverIndex);
     }
     setTouchStartY(null);
     setDragOverIndex(null);
@@ -156,7 +152,6 @@ const DroppableList: React.FC<DroppableListProps> = ({
               <DraggableCard 
                 {...card} 
                 onCardUpdated={onCardAdded}
-                onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
                 isDone={list.title === 'Done'}
                 allLists={allLists}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { List as ListType } from '../types';
 import * as Select from '@radix-ui/react-select';
 import { ChevronDown, Check } from 'lucide-react';

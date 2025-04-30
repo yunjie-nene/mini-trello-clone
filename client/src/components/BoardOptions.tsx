@@ -21,7 +21,7 @@ const BoardOptions: React.FC<BoardOptionsProps> = ({ boardId, boardTitle }) => {
     }
   });
 
-  const [deleteBoard, { loading: deleteLoading }] = useMutation(DELETE_BOARD, {
+  const [deleteBoard, ] = useMutation(DELETE_BOARD, {
     refetchQueries: [{ query: GET_BOARDS }],
     onCompleted: () => {
       navigate('/');

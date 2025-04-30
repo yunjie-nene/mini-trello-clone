@@ -67,7 +67,6 @@ const Board: React.FC = () => {
 
   const handleCardMoved = async (
     cardId: string, 
-    sourceListId: string, 
     targetListId: string, 
     position: number
   ) => {

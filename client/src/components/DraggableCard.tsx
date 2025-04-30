@@ -6,11 +6,11 @@ import { CheckCircle, MoreVertical, GripVertical } from 'lucide-react';
 
 interface DraggableCardProps extends CardType {
   onCardUpdated: () => void;
-  onDragStart: (cardId: string, listId: string) => void;
+  onDragStart?: (cardId: string, listId: string) => void;
   onDragEnd: () => void;
   isDone?: boolean;
   allLists: ListType[];
-  onMoveCard: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
+  onMoveCard: (cardId: string, targetListId: string, position: number) => void;
 }
 
 const DraggableCard: React.FC<DraggableCardProps> = ({ 
@@ -65,7 +65,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         }
       }, 0);
       
-      onDragStart(_id, list._id);
+      onDragStart?.(_id, list._id);
     }
   };
 
@@ -82,7 +82,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
     setShowMobileOptions(!showMobileOptions);
   };
   
-  const handleTouchStart = (e: React.TouchEvent) => {
+  const handleTouchStart = () => {
     longPressTimeoutRef.current = setTimeout(() => {
       setShowMobileOptions(true);
     }, 800);
@@ -176,7 +176,7 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
                     disabled={l._id === list._id}
                     onClick={() => {
                       if (l._id !== list._id) {
-                        onMoveCard(_id, list._id, l._id, Number.MAX_SAFE_INTEGER);
+                        onMoveCard(_id, l._id, Number.MAX_SAFE_INTEGER);
                         setShowMobileOptions(false);
                       }
                     }}

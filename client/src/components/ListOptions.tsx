@@ -25,7 +25,7 @@ const ListOptions: React.FC<ListOptionsProps> = ({ listId, boardId, listTitle, o
     }
   });
 
-  const [deleteList, { loading: deleteLoading }] = useMutation(DELETE_LIST, {
+  const [deleteList] = useMutation(DELETE_LIST, {
     refetchQueries: [
       { query: GET_LISTS, variables: { boardId } },
       { query: GET_CARDS }

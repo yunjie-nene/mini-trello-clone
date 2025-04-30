@@ -11,7 +11,7 @@ interface ColumnTabsProps {
   activeListId: string;
   onSelectList: (listId: string) => void;
   onCardAdded: () => void;
-  onCardMoved: (cardId: string, sourceListId: string, targetListId: string, position: number) => void;
+  onCardMoved: (cardId: string,targetListId: string, position: number) => void;
   activeDragItem: { cardId: string, listId: string } | null;
   onListUpdated: () => void;
 }
