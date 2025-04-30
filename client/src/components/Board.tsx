@@ -17,11 +17,10 @@ const Board: React.FC = () => {
   const [activeListId, setActiveListId] = useState<string>('');
   const [activeDragItem, setActiveDragItem] = useState<{ cardId: string, listId: string } | null>(null);
   const [viewMode, setViewMode] = useState<'tabs' | 'scroll'>('scroll');
-  const [addingList, setAddingList] = useState(false);
+  const [, setAddingList] = useState(false);
   const listContainerRef = useRef<HTMLDivElement>(null);
 
-  // GraphQL queries
-  const { data: boardData, loading: boardLoading, error: boardError, refetch: refetchBoard } = useQuery(GET_BOARD, {
+  const { data: boardData, loading: boardLoading, error: boardError } = useQuery(GET_BOARD, {
     variables: { id: boardId },
     skip: !boardId
   });
@@ -33,12 +32,10 @@ const Board: React.FC = () => {
 
   const { data: cardsData, refetch: refetchCards } = useQuery(GET_CARDS);
 
-  // GraphQL mutations
   const [moveCardMutation] = useMutation(MOVE_CARD);
 
   useEffect(() => {
     if (listsData?.lists?.length > 0 && !activeListId) {
-      // Ensure we have a valid list before setting it as active
       const firstList = listsData.lists[0];
       if (firstList && firstList._id) {
         setActiveListId(firstList._id);
@@ -74,8 +71,6 @@ const Board: React.FC = () => {
     targetListId: string, 
     position: number
   ) => {
-    console.log(`Moving card ${cardId} from ${sourceListId} to ${targetListId} at position ${position}`);
-    
     setActiveDragItem(null);
     
     try {
@@ -122,14 +117,11 @@ const Board: React.FC = () => {
 
   const board = boardData?.board;
   const lists: ListType[] = listsData?.lists || [];
-  
-  // Make sure cards data is available before proceeding
   const cards: Card[] = cardsData?.cards || [];
 
   if (!board) {
     return <div className="flex justify-center items-center h-full">Board not found</div>;
   }
-
 
   return (
     <div className="flex flex-col h-full bg-gray-100">
@@ -186,7 +178,6 @@ const Board: React.FC = () => {
           className="flex flex-nowrap overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-160px)]"
         >
           {lists.map((list: ListType) => {
-            // Filter cards for this list
             const listCards = cards.filter((card: Card) => {
               const cardListId = typeof card.list === 'object' 
                 ? card.list._id 

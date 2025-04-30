@@ -31,7 +31,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   const [showMobileOptions, setShowMobileOptions] = useState(false);
   const longPressTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Clear any timeouts when component unmounts
   useEffect(() => {
     return () => {
       if (longPressTimeoutRef.current) {
@@ -51,26 +50,22 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
-    // Set data that will be used on drop
     e.dataTransfer.setData('cardId', _id);
-    e.dataTransfer.setData('sourceListId', list);
+    e.dataTransfer.setData('sourceListId', list._id);
     
-    // Create a ghost image effect
     if (cardRef.current) {
       const rect = cardRef.current.getBoundingClientRect();
       e.dataTransfer.setDragImage(cardRef.current, rect.width / 2, rect.height / 2);
       
-      // Set dragging state
       setIsDragging(true);
       
-      // Add a small delay to prevent the card click handler from firing
       setTimeout(() => {
         if (cardRef.current) {
           cardRef.current.style.opacity = '0.4';
         }
       }, 0);
       
-      onDragStart(_id, list);
+      onDragStart(_id, list._id);
     }
   };
 
@@ -83,20 +78,17 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   };
 
   const handleMobileOptionsClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent card click
+    e.stopPropagation();
     setShowMobileOptions(!showMobileOptions);
   };
   
-  // Handle long press for touch devices
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Start timer for long press
     longPressTimeoutRef.current = setTimeout(() => {
       setShowMobileOptions(true);
-    }, 800); // Long press after 800ms
+    }, 800);
   };
   
   const handleTouchEnd = () => {
-    // Clear the long press timer
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
       longPressTimeoutRef.current = null;
@@ -104,7 +96,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
   };
   
   const handleTouchMove = () => {
-    // If user moves finger while pressing, cancel long press
     if (longPressTimeoutRef.current) {
       clearTimeout(longPressTimeoutRef.current);
       longPressTimeoutRef.current = null;
@@ -129,7 +120,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
         }`}
       >
         <div className="flex justify-between items-start">
-          {/* Card content */}
           <div className="flex-1">
             <h4 className={`font-medium flex items-center gap-2 ${isDone ? 'text-green-700' : 'text-gray-700'} break-words`}>
               {isDone && <CheckCircle className="text-green-500 flex-shrink-0" size={16} />}
@@ -141,22 +131,18 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
             )}
           </div>
           
-          {/* Card controls */}
           <div className="flex items-center gap-1 ml-2 flex-shrink-0">
-            {/* Drag handle - visual indicator */}
             <div className="touch-none md:cursor-grab text-gray-400 p-1 hidden md:flex">
               <GripVertical size={14} />
             </div>
             
-            {/* Status changer (visible on both mobile and desktop) */}
             <CardStatusChanger
               cardId={_id}
-              currentListId={list}
+              currentListId={list._id}
               lists={allLists}
               onMoveCard={onMoveCard}
             />
             
-            {/* Mobile handle for touch devices */}
             <button 
               className="text-gray-400 p-1 rounded-full hover:bg-gray-100 md:hidden"
               onClick={handleMobileOptionsClick}
@@ -166,7 +152,6 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
           </div>
         </div>
         
-        {/* Mobile options menu */}
         {showMobileOptions && (
           <div className="mt-2 p-2 bg-gray-50 rounded text-sm md:hidden">
             <div className="text-center text-xs text-gray-500 mb-1">Card options</div>
@@ -184,14 +169,14 @@ const DraggableCard: React.FC<DraggableCardProps> = ({
                   <button 
                     key={l._id} 
                     className={`w-full text-left py-1 px-2 rounded text-sm ${
-                      l._id === list 
+                      l._id === list._id 
                         ? 'bg-blue-100 text-blue-700' 
                         : 'hover:bg-gray-100 text-gray-700'
                     }`}
-                    disabled={l._id === list}
+                    disabled={l._id === list._id}
                     onClick={() => {
-                      if (l._id !== list) {
-                        onMoveCard(_id, list, l._id, Number.MAX_SAFE_INTEGER);
+                      if (l._id !== list._id) {
+                        onMoveCard(_id, list._id, l._id, Number.MAX_SAFE_INTEGER);
                         setShowMobileOptions(false);
                       }
                     }}

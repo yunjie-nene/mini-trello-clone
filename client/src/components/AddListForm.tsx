@@ -26,7 +26,6 @@ const AddListForm: React.FC<AddListFormProps> = ({ boardId, onListAdded }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Submitting form with id:', boardId);
     if (title.trim()) {
       try {
         await createList({

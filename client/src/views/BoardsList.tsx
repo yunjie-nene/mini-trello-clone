@@ -12,10 +12,8 @@ const BoardsList: React.FC = () => {
   const [editingBoardId, setEditingBoardId] = useState<string | null>(null);
   const [editingBoardTitle, setEditingBoardTitle] = useState('');
   
-  // Fetch all boards
   const { data, loading, error } = useQuery(GET_BOARDS);
   
-  // Create board mutation
   const [createBoard, { loading: createLoading }] = useMutation(CREATE_BOARD, {
     refetchQueries: [{ query: GET_BOARDS }],
     onCompleted: () => {
@@ -24,7 +22,6 @@ const BoardsList: React.FC = () => {
     }
   });
 
-  // Update board mutation
   const [updateBoard, { loading: updateLoading }] = useMutation(UPDATE_BOARD, {
     refetchQueries: [{ query: GET_BOARDS }],
     onCompleted: () => {
@@ -33,7 +30,6 @@ const BoardsList: React.FC = () => {
     }
   });
 
-  // Delete board mutation
   const [deleteBoard, { loading: deleteLoading }] = useMutation(DELETE_BOARD, {
     refetchQueries: [{ query: GET_BOARDS }]
   });
@@ -43,9 +39,7 @@ const BoardsList: React.FC = () => {
     if (newBoardTitle.trim()) {
       try {
         await createBoard({
-          variables: {
-            title: newBoardTitle.trim()
-          }
+          variables: { title: newBoardTitle.trim() }
         });
       } catch (err) {
         console.error('Error creating board:', err);
@@ -73,9 +67,7 @@ const BoardsList: React.FC = () => {
     if (window.confirm('Are you sure you want to delete this board? This action cannot be undone.')) {
       try {
         await deleteBoard({
-          variables: {
-            id: boardId
-          }
+          variables: { id: boardId }
         });
       } catch (err) {
         console.error('Error deleting board:', err);
@@ -89,7 +81,6 @@ const BoardsList: React.FC = () => {
   };
   
   if (loading) return <div className="flex justify-center items-center h-full">Loading...</div>;
-  
   if (error) return <div className="flex justify-center items-center h-full">Error loading boards</div>;
   
   const boards: Board[] = data?.boards || [];
