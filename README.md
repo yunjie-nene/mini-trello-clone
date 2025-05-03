@@ -1,27 +1,38 @@
-# Mini Trello Clone
+# Nora Trello Clone
 
-This is a mini Trello clone application built using the MERN (MongoDB, Express, React, Node.js) stack and Tailwind CSS. It aims to provide basic kanban functionalities, including list and card management.
+A kanban board application built with the MERN stack and GraphQL, featuring drag-and-drop functionality and responsive design.
 
 ## Features
 
-- **Kanban View**: Displays a default board containing multiple lists, each with several cards.
-- **List Management**: Add and delete lists.
-- **Card Management**: Add and delete cards within specified lists, with support for drag-and-drop functionality.
-- **Data Persistence**: All operations are synchronized with the backend database to ensure data consistency.
-- **Responsive Design**: Adapts to both mobile and desktop devices for an optimal user experience.
+- **Board Management**: Create, rename, and delete boards
+- **List Management**: Create, rename, and delete lists within boards
+- **Card Management**: Create, edit, and delete cards with titles and descriptions
+- **Drag & Drop**: Move cards between lists and reorder them
+- **Responsive Design**: 
+  - Desktop view with horizontal scrolling lists
+  - Mobile view with tab navigation or scrollable lists
+  - Touch support for card management
 
 ## Tech Stack
 
-- **Frontend**:
-  - React
-  - TypeScript
-  - Tailwind CSS
-  - react-beautiful-dnd (for drag-and-drop functionality)
-- **Backend**:
-  - Node.js
-  - Express
-  - MongoDB
-  - Mongoose
-- **Development Tools**:
-  - Vite (for fast builds)
+### Frontend
+- React with TypeScript
+- Apollo Client for GraphQL
+- Tailwind CSS
+- Radix UI components
+- Lucide React icons
+- React Router
 
+### Backend
+- Node.js with Express
+- GraphQL with Apollo Server
+- MongoDB with Mongoose
+- TypeScript
+
+## Implementation Details
+
+- Native Drag & Drop API instead of external libraries
+- GraphQL mutations and queries for data operations
+- Optimistic UI updates with Apollo Client
+- Mobile-first responsive design with adaptive layouts
+- Context-sensitive dropdown menus for item management

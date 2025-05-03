@@ -1,0 +1,48 @@
+type Board {
+  _id: ID!
+  title: String!
+  lists: [List!]
+}
+
+type List {
+  _id: ID!
+  title: String!
+  board: Board!
+  cards: [Card!]
+}
+
+type Card {
+  _id: ID!
+  title: String!
+  description: String
+  list: List!
+  position: Int
+}
+
+type Query {
+  boards: [Board!]!
+  board(id: ID!): Board
+  lists(boardId: ID): [List!]!
+  list(id: ID!): List
+  cards(listId: ID): [Card!]!
+  card(id: ID!): Card
+}
+
+type DeleteResponse {
+  _id: ID!
+}
+
+type Mutation {
+  createBoard(title: String!): Board!
+  updateBoard(id: ID!, title: String!): Board!
+  deleteBoard(id: ID!): DeleteResponse!
+  
+  createList(title: String!, boardId: ID!): List!
+  updateList(id: ID!, title: String!): List!
+  deleteList(id: ID!): DeleteResponse!
+  
+  createCard(title: String!, listId: ID!, description: String, position: Int): Card!
+  updateCard(id: ID!, title: String, description: String, listId: ID, position: Int): Card!
+  deleteCard(id: ID!): ID!
+  moveCard(id: ID!, listId: ID!, position: Int!): Card!
+}
