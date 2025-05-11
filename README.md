@@ -29,6 +29,15 @@ A kanban board application built with the MERN stack and GraphQL, featuring drag
 - MongoDB with Mongoose
 - TypeScript
 
+### Deployment
+- MVP Demo is currrently deployed on Render https://mini-trello-clone-1.onrender.com/
+- Consider to deploy backend with AWS in the future
+
+## Current Progress
+- Implemented task management
+- Will optimize the drag-drop especially on the drag to the top
+- Will add user login/logout
+
 ## Implementation Details
 
 - Native Drag & Drop API instead of external libraries
@@ -36,7 +45,3 @@ A kanban board application built with the MERN stack and GraphQL, featuring drag
 - Optimistic UI updates with Apollo Client
 - Mobile-first responsive design with adaptive layouts
 - Context-sensitive dropdown menus for item management
-
-## Deployment
-- MVP Demo is currrently deployed on Render https://mini-trello-clone-1.onrender.com/
-- Consider to deploy backend with AWS in the future
