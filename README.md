@@ -36,3 +36,7 @@ A kanban board application built with the MERN stack and GraphQL, featuring drag
 - Optimistic UI updates with Apollo Client
 - Mobile-first responsive design with adaptive layouts
 - Context-sensitive dropdown menus for item management
+
+## Deployment
+- MVP Demo is currrently deployed on Render https://mini-trello-clone-1.onrender.com/
+- Consider to deploy backend with AWS in the future
