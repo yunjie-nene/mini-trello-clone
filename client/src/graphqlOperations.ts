@@ -1,5 +1,38 @@
 import { gql } from '@apollo/client';
 
+export const LOGIN = gql`
+  mutation Login($username: String!, $password: String!) {
+    login(username: $username, password: $password) {
+      token
+      user {
+        _id
+        username
+      }
+    }
+  }
+`;
+
+export const REGISTER = gql`
+  mutation Register($username: String!, $password: String!) {
+    register(username: $username, password: $password) {
+      token
+      user {
+        _id
+        username
+      }
+    }
+  }
+`;
+
+export const GET_CURRENT_USER = gql`
+  query Me {
+    me {
+      _id
+      username
+    }
+  }
+`;
+
 // Board queries
 export const GET_BOARDS = gql`
   query GetBoards {
@@ -105,7 +138,6 @@ export const DELETE_LIST = gql`
   }
 `;
 
-// Card queries
 export const GET_CARDS = gql`
   query GetCards($listId: ID) {
     cards(listId: $listId) {
@@ -121,7 +153,6 @@ export const GET_CARDS = gql`
   }
 `;
 
-// Card mutations
 export const CREATE_CARD = gql`
   mutation CreateCard($title: String!, $listId: ID!, $description: String) {
     createCard(title: $title, listId: $listId, description: $description) {
