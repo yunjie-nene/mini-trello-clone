@@ -22,7 +22,18 @@ async function startServer() {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: ({ req }) => ({}),
+    context: ({ req, res }: { req: express.Request; res: express.Response }) => {
+      return { req, res };
+    },
+    // Enhanced error formatting
+    formatError: (error) => {
+      console.error('GraphQL Error:', error);
+      return {
+        message: error.message,
+        code: error.extensions?.code,
+        path: error.path,
+      };
+    },
   });
 
   await server.start();
@@ -39,4 +50,5 @@ async function startServer() {
 
 startServer().catch(error => {
   console.error('Error starting server:', error);
+  process.exit(1);
 });
