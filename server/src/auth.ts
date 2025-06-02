@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Request } from 'express';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; // Use env variable in production
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'; 
 
 export interface AuthPayload {
   userId: string;
@@ -12,7 +12,7 @@ export const generateToken = (userId: string): string => {
     throw new Error('User ID is required to generate token');
   }
   
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' }); // Extended to 7 days
+  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '7d' }); 
 };
 
 export const verifyToken = (token: string): AuthPayload => {
@@ -45,8 +45,6 @@ export const getUserId = (req: Request): string | null => {
     if (!req.headers) {
       return null;
     }
-
-    console.log('🔍 Auth Debug - All headers:', Object.keys(req.headers));
     
     const authHeader = req.headers.authorization;
     
