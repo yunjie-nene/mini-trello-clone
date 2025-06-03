@@ -112,14 +112,18 @@ const DroppableList: React.FC<DroppableListProps> = ({
 
   return (
     <div 
-      className={`bg-white rounded-lg shadow-sm w-full md:w-[280px] flex flex-col items-stretch ${
-        isDragOver ? 'bg-blue-50' : ''
+      className={`bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 w-full md:w-[300px] flex flex-col items-stretch transition-all duration-300 hover:shadow-2xl ${
+        isDragOver ? 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-300 shadow-2xl scale-105' : ''
       }`}
+      style={{ minHeight: '400px' }}
     >
-      <div className="p-3 border-b border-gray-200 flex justify-between items-center">
+      <div className="p-4 border-b border-gray-100/50 flex justify-between items-center bg-gradient-to-r from-slate-50 to-gray-50 rounded-t-2xl">
         <div>
-          <h3 className="font-medium text-gray-700">{list.title}</h3>
-          <div className="text-xs text-gray-500">{filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'}</div>
+          <h3 className="font-semibold text-gray-800 text-lg tracking-wide">{list.title}</h3>
+          <div className="text-xs text-gray-500 mt-1 flex items-center gap-2">
+            <div className="w-2 h-2 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full"></div>
+            {filteredCards.length} {filteredCards.length === 1 ? 'card' : 'cards'}
+          </div>
         </div>
         <ListOptions 
           listId={list._id} 
@@ -130,19 +134,23 @@ const DroppableList: React.FC<DroppableListProps> = ({
       </div>
       
       <div 
-        className="flex-1 p-2 overflow-y-auto max-h-[calc(100vh-220px)] md:max-h-[calc(100vh-180px)]"
+        className="flex-1 p-3 overflow-y-auto max-h-[calc(100vh-280px)] md:max-h-[calc(100vh-240px)] custom-scrollbar"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        style={{
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#cbd5e1 transparent'
+        }}
       >
         {dragOverIndex === 0 && (
-          <div className="h-1 bg-blue-500 rounded my-2" />
+          <div className="h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full my-2 shadow-sm animate-pulse" />
         )}
         
         {filteredCards.map((card, index) => (
           <React.Fragment key={card._id}>
             <div 
-              className="mb-2"
+              className="mb-3 transform transition-all duration-200 hover:scale-[1.02]"
               onDragOver={(e) => handleCardDragOver(e, index)}
               onDrop={handleDrop}
               onTouchStart={(e) => handleTouchStart(e)}
@@ -159,19 +167,22 @@ const DroppableList: React.FC<DroppableListProps> = ({
               />
             </div>
             {dragOverIndex === index + 1 && (
-              <div className="h-1 bg-blue-500 rounded my-2" />
+              <div className="h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full my-2 shadow-sm animate-pulse" />
             )}
           </React.Fragment>
         ))}
         
         {filteredCards.length === 0 && (
-          <div className="border-2 border-dashed border-gray-200 rounded-lg p-4 text-center text-gray-400 text-sm h-16 flex items-center justify-center">
-            Drop a card here
+          <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center text-gray-400 text-sm h-20 flex items-center justify-center bg-gradient-to-br from-gray-50 to-slate-50 hover:from-blue-50 hover:to-indigo-50 transition-all duration-300">
+            <div className="flex flex-col items-center gap-2">
+              <div className="w-4 h-4 border-2 border-dashed border-gray-300 rounded"></div>
+              <span className="font-medium">Drop a card here</span>
+            </div>
           </div>
         )}
       </div>
       
-      <div className="p-2 border-t border-gray-200">
+      <div className="p-3 border-t border-gray-100/50 bg-gradient-to-r from-gray-50 to-slate-50 rounded-b-2xl">
         <AddCardForm listId={list._id} onCardAdded={onCardAdded} />
       </div>
     </div>

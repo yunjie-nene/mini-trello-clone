@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@apollo/client';
 import { REGISTER } from '../graphqlOperations';
 import { useAuth } from '../context/AuthContext';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, UserPlus, User, Lock, CheckCircle, Sparkles } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -55,85 +55,142 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Create your account
+        {/* Header */}
+        <div className="text-center">
+          <div className="mx-auto w-16 h-16 bg-gradient-to-r from-emerald-500 to-blue-500 rounded-2xl flex items-center justify-center mb-6 shadow-lg">
+            <UserPlus size={28} className="text-white" />
+          </div>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+            Join Nora Trello
           </h2>
+          <p className="mt-2 text-gray-600">Create your account to get started</p>
         </div>
         
+        {/* Error Alert */}
         {error && (
-          <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+          <div className="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-400 p-4 rounded-xl shadow-lg">
             <div className="flex items-center">
-              <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-              <p className="text-sm text-red-700">{error}</p>
+              <AlertCircle className="h-5 w-5 text-red-400 mr-3" />
+              <p className="text-sm text-red-700 font-medium">{error}</p>
             </div>
           </div>
         )}
-        
+ 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">Username</label>
+          <div className="space-y-4">
+            <div className="relative">
+              <label htmlFor="username" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <User size={16} />
+                Username
+              </label>
               <input
                 id="username"
                 name="username"
                 type="text"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Username"
+                className="relative block w-full px-4 py-4 pl-12 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 font-medium"
+                placeholder="Choose a username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={loading}
               />
+              <User size={18} className="absolute left-4 top-[46px] text-gray-400" />
             </div>
-            <div>
-              <label htmlFor="password" className="sr-only">Password</label>
+            
+            <div className="relative">
+              <label htmlFor="password" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <Lock size={16} />
+                Password
+              </label>
               <input
                 id="password"
                 name="password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
+                className="relative block w-full px-4 py-4 pl-12 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 font-medium"
+                placeholder="Create a password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={loading}
               />
+              <Lock size={18} className="absolute left-4 top-[46px] text-gray-400" />
             </div>
-            <div>
-              <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
+            
+            <div className="relative">
+              <label htmlFor="confirm-password" className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+                <CheckCircle size={16} />
+                Confirm Password
+              </label>
               <input
                 id="confirm-password"
                 name="confirm-password"
                 type="password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Confirm Password"
+                className="relative block w-full px-4 py-4 pl-12 border-2 border-gray-200 placeholder-gray-400 text-gray-900 rounded-xl focus:outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all duration-300 font-medium"
+                placeholder="Confirm your password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 disabled={loading}
               />
+              <CheckCircle size={18} className="absolute left-4 top-[46px] text-gray-400" />
             </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+            <p className="text-xs text-gray-600 font-medium mb-2">Password requirements:</p>
+            <ul className="text-xs text-gray-600 space-y-1">
+              <li className={`flex items-center gap-2 ${password.length >= 6 ? 'text-green-600' : 'text-gray-500'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${password.length >= 6 ? 'bg-green-500' : 'bg-gray-300'}`} />
+                At least 6 characters
+              </li>
+              <li className={`flex items-center gap-2 ${password === confirmPassword && password ? 'text-green-600' : 'text-gray-500'}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${password === confirmPassword && password ? 'bg-green-500' : 'bg-gray-300'}`} />
+                Passwords match
+              </li>
+            </ul>
           </div>
 
           <div>
             <button
               type="submit"
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                loading ? 'opacity-70 cursor-not-allowed' : ''
+              className={`group relative w-full flex justify-center py-4 px-6 border border-transparent text-sm font-bold rounded-xl text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 shadow-lg hover:shadow-xl transition-all duration-300 ${
+                loading ? 'opacity-70 cursor-not-allowed' : 'hover:scale-105'
               }`}
               disabled={loading}
             >
-              {loading ? 'Creating account...' : 'Sign up'}
+              {loading ? (
+                <div className="flex items-center gap-3">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Creating account...
+                </div>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <UserPlus size={18} />
+                  Create Account
+                  <Sparkles size={16} className="opacity-70" />
+                </div>
+              )}
             </button>
           </div>
           
-          <div className="text-sm text-center">
-            <span className="text-gray-600">Already have an account? </span>
-            <Link to="/login" className="font-medium text-blue-600 hover:text-blue-500">
-              Sign in
+          <div className="text-center">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300" />
+              </div>
+              <div className="relative flex justify-center text-sm">
+                <span className="px-4 bg-gradient-to-br from-emerald-50 via-blue-50 to-indigo-50 text-gray-600 font-medium">
+                  Already have an account?
+                </span>
+              </div>
+            </div>
+            <Link 
+              to="/login" 
+              className="mt-4 inline-block font-semibold text-emerald-600 hover:text-emerald-500 transition-colors duration-200 hover:underline"
+            >
+              Sign in instead
             </Link>
           </div>
         </form>
