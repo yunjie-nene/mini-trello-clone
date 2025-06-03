@@ -1,7 +1,10 @@
 import { createBrowserRouter, RouteObject } from 'react-router-dom';
-import App from './App';
+import App, { ProtectedRoute, PublicRoute } from './App';
 import Board from './components/Board';
-import BoardList from './views/BoardsList';
+import BoardsList from './views/BoardsList';
+import Login from './views/Login';
+import Register from './views/Register';
+import PageNotFound from './views/PageNotFound';
 
 // Define the application routes
 const routes: RouteObject[] = [
@@ -11,11 +14,39 @@ const routes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <BoardList />,
+        element: (
+          <ProtectedRoute>
+            <BoardsList />
+          </ProtectedRoute>
+        ),
       },
       {
         path: 'board/:boardId',
-        element: <Board />,
+        element: (
+          <ProtectedRoute>
+            <Board />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'login',
+        element: (
+          <PublicRoute>
+            <Login />
+          </PublicRoute>
+        ),
+      },
+      {
+        path: 'register',
+        element: (
+          <PublicRoute>
+            <Register />
+          </PublicRoute>
+        ),
+      },
+      {
+        path: '*',
+        element: <PageNotFound />
       }
     ]
   }

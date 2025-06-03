@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { UPDATE_LIST, DELETE_LIST, GET_LISTS, GET_CARDS } from '../graphqlOperations';
-import { MoreHorizontal, Edit2, Trash2, X } from 'lucide-react';
+import { MoreHorizontal, Edit2, Trash2, X, Settings } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
 interface ListOptionsProps {
@@ -72,15 +72,15 @@ const ListOptions: React.FC<ListOptionsProps> = ({ listId, boardId, listTitle, o
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="flex-1 bg-white border border-gray-300 rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="flex-1 bg-white border-2 border-blue-300 rounded-lg px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-200 min-w-[150px]"
           autoFocus
         />
         <button
           type="submit"
-          className="bg-blue-500 text-white px-2 py-1 rounded text-xs hover:bg-blue-600"
+          className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-2 rounded-lg text-xs font-medium hover:scale-105 transition-all duration-200"
           disabled={updateLoading}
         >
-          Save
+          {updateLoading ? 'Saving...' : 'Save'}
         </button>
         <button
           type="button"
@@ -88,9 +88,9 @@ const ListOptions: React.FC<ListOptionsProps> = ({ listId, boardId, listTitle, o
             setIsEditing(false);
             setTitle(listTitle);
           }}
-          className="text-gray-500 hover:text-gray-700"
+          className="text-gray-500 hover:text-gray-700 p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
         >
-          <X size={16} />
+          <X size={18} />
         </button>
       </form>
     );
@@ -99,32 +99,37 @@ const ListOptions: React.FC<ListOptionsProps> = ({ listId, boardId, listTitle, o
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className="p-1 rounded-full hover:bg-gray-200">
-          <MoreHorizontal size={16} className="text-gray-600" />
+        <button className="p-2 rounded-xl hover:bg-gray-200/80 backdrop-blur-sm transition-all duration-200 group">
+          <MoreHorizontal size={18} className="text-gray-600 group-hover:text-gray-800" />
         </button>
       </DropdownMenu.Trigger>
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="min-w-[160px] bg-white rounded-md p-1 shadow-md border border-gray-200 z-50"
-          sideOffset={5}
+          className="min-w-[180px] bg-white/95 backdrop-blur-md rounded-xl p-2 shadow-xl border border-gray-200 z-50"
+          sideOffset={8}
           align="end"
         >
+          <div className="flex items-center gap-2 px-3 py-2 text-xs text-gray-500 font-semibold">
+            <Settings size={14} />
+            List Options
+          </div>
+          
           <DropdownMenu.Item
-            className="flex items-center px-2 py-1.5 text-sm rounded-sm outline-none cursor-pointer text-gray-700 focus:bg-blue-50 focus:text-blue-600"
+            className="flex items-center px-3 py-2.5 text-sm rounded-lg outline-none cursor-pointer text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 hover:scale-105"
             onClick={() => setIsEditing(true)}
           >
-            <Edit2 size={14} className="mr-2" />
+            <Edit2 size={16} className="mr-3" />
             Rename List
           </DropdownMenu.Item>
 
-          <DropdownMenu.Separator className="h-px bg-gray-200 my-1" />
+          <DropdownMenu.Separator className="h-px bg-gray-200 my-2" />
 
           <DropdownMenu.Item
-            className="flex items-center px-2 py-1.5 text-sm rounded-sm outline-none cursor-pointer text-red-600 focus:bg-red-50"
+            className="flex items-center px-3 py-2.5 text-sm rounded-lg outline-none cursor-pointer text-red-600 hover:bg-red-50 transition-all duration-200 hover:scale-105"
             onClick={handleDeleteList}
           >
-            <Trash2 size={14} className="mr-2" />
+            <Trash2 size={16} className="mr-3" />
             Delete List
           </DropdownMenu.Item>
         </DropdownMenu.Content>

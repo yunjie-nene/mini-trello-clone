@@ -107,11 +107,24 @@ const Board: React.FC = () => {
   };
 
   if (boardLoading || listsLoading) {
-    return <div className="flex justify-center items-center h-full">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading your board...</p>
+        </div>
+      </div>
+    );
   }
 
   if (boardError) {
-    return <div className="flex justify-center items-center h-full">Error loading board data</div>;
+    return (
+      <div className="flex justify-center items-center h-full bg-gradient-to-br from-red-50 to-rose-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <p className="text-red-600 font-medium">Error loading board data</p>
+        </div>
+      </div>
+    );
   }
 
   const board = boardData?.board;
@@ -119,31 +132,42 @@ const Board: React.FC = () => {
   const cards: Card[] = cardsData?.cards || [];
 
   if (!board) {
-    return <div className="flex justify-center items-center h-full">Board not found</div>;
+    return (
+      <div className="flex justify-center items-center h-full bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg">
+          <p className="text-gray-600 font-medium">Board not found</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-100">
-      <div className="py-2 sm:py-4 bg-white shadow-sm">
+    <div className="flex flex-col h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+      <div className="py-3 sm:py-5 bg-white/80 backdrop-blur-sm shadow-lg border-b border-white/20">
         <div className="px-4 sm:px-8 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800">{board.title}</h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+              <h2 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
+                {board.title}
+              </h2>
+            </div>
             {boardId && <BoardOptions boardId={boardId} boardTitle={board.title} />}
           </div>
           
           <button 
             onClick={toggleViewMode}
-            className="text-xs px-2 py-1 bg-gray-100 rounded md:hidden flex items-center gap-1"
+            className="text-xs px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg md:hidden flex items-center gap-2 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
             {viewMode === 'tabs' ? (
               <>
                 <Layers size={14} />
-                <span>Show All Lists</span>
+                <span className="font-medium">Show All Lists</span>
               </>
             ) : (
               <>
                 <List size={14} />
-                <span>Tab View</span>
+                <span className="font-medium">Tab View</span>
               </>
             )}
           </button>
@@ -171,10 +195,14 @@ const Board: React.FC = () => {
         />
       )}
       
-      <div className={`flex-1 px-2 sm:px-6 py-4 overflow-auto ${viewMode === 'tabs' ? 'hidden md:block' : ''}`}>
+      <div className={`flex-1 px-3 sm:px-6 py-6 overflow-auto ${viewMode === 'tabs' ? 'hidden md:block' : ''}`}>
         <div 
           ref={listContainerRef}
-          className="flex flex-nowrap overflow-x-auto pb-4 sm:pb-6 gap-3 sm:gap-4 md:gap-6 snap-x min-h-[calc(100vh-200px)] md:min-h-[calc(100vh-160px)]"
+          className="flex flex-nowrap overflow-x-auto pb-6 sm:pb-8 gap-4 sm:gap-5 md:gap-6 snap-x min-h-[calc(100vh-220px)] md:min-h-[calc(100vh-180px)]"
+          style={{
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#cbd5e1 transparent'
+          }}
         >
           {lists.map((list: ListType) => {
             const listCards = cards.filter((card: Card) => {

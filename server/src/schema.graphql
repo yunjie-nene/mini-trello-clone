@@ -2,6 +2,7 @@ type Board {
   _id: ID!
   title: String!
   lists: [List!]
+  user: User!
 }
 
 type List {
@@ -19,7 +20,25 @@ type Card {
   position: Int
 }
 
+type User {
+  _id: ID!
+  username: String!
+  password: String!
+  boards: [Board!]
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+
+type DeleteResponse {
+  _id: ID!
+}
+
 type Query {
+  me: User
   boards: [Board!]!
   board(id: ID!): Board
   lists(boardId: ID): [List!]!
@@ -28,11 +47,10 @@ type Query {
   card(id: ID!): Card
 }
 
-type DeleteResponse {
-  _id: ID!
-}
-
 type Mutation {
+  register(username: String!, password: String!): AuthPayload!
+  login(username: String!, password: String!): AuthPayload!
+  
   createBoard(title: String!): Board!
   updateBoard(id: ID!, title: String!): Board!
   deleteBoard(id: ID!): DeleteResponse!
