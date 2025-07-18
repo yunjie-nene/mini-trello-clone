@@ -13,6 +13,12 @@ const Header: React.FC = () => {
     errorPolicy: 'ignore'
   });
 
+  // If token is not invalid or expired
+  if(userData?.me === null && token) {
+    localStorage.removeItem('auth_token');
+    window.location.href = '/login';
+  }
+
   return (
     <header className="bg-gradient-to-r from-blue-600 via-blue-500 to-purple-600 text-white px-4 py-3 shadow-lg backdrop-blur-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
