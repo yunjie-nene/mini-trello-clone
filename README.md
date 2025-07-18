@@ -2,6 +2,9 @@
 
 A kanban board application built with the MERN stack and GraphQL, featuring drag-and-drop functionality and responsive design.
 
+## Current demo
+https://mini-trello-clone-1.onrender.com/
+
 ## Features
 
 - **Board Management**: Create, rename, and delete boards
